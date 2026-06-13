@@ -1,0 +1,25 @@
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+.ipynb_checkpoints/
+*.pkl
+*.joblib
+.env
+
+# Large Wyscout event files — use Git LFS or download separately
+# See analysis/explore_dataset.py for download instructions
+data/raw/wyscout/events_*.json
+data/raw/wyscout/matches_*.json
+data/raw/wyscout/players.json
+data/raw/wyscout/teams.json
+
+# Raw international results download (3.6MB — borderline, keeping out for safety)
+# Regenerate with: curl -sL https://raw.githubusercontent.com/martj42/international_results/master/results.csv -o data/raw/intl_football_results.csv
+data/raw/intl_football_results.csv
+
+# Node / dashboard
+node_modules/
+.next/
+dist/
+build/
