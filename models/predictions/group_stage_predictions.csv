@@ -1,0 +1,73 @@
+group,home,away,p_home_win,p_draw,p_away_win,predicted_result,max_p
+A,Mexico,South Korea,0.474,0.2106,0.3155,home_win,0.474
+A,Mexico,South Africa,0.6576,0.2221,0.1204,home_win,0.6576
+A,Mexico,Czech Republic,0.4627,0.2363,0.301,home_win,0.4627
+A,South Korea,South Africa,0.6578,0.199,0.1431,home_win,0.6578
+A,South Korea,Czech Republic,0.4162,0.2126,0.3712,home_win,0.4162
+A,South Africa,Czech Republic,0.201,0.2083,0.5907,away_win,0.5907
+B,Canada,Switzerland,0.2962,0.227,0.4768,away_win,0.4768
+B,Canada,Qatar,0.7486,0.1586,0.0928,home_win,0.7486
+B,Canada,Bosnia and Herzegovina,0.5871,0.2337,0.1793,home_win,0.5871
+B,Switzerland,Qatar,0.7868,0.1354,0.0778,home_win,0.7868
+B,Switzerland,Bosnia and Herzegovina,0.6988,0.1665,0.1347,home_win,0.6988
+B,Qatar,Bosnia and Herzegovina,0.2063,0.2235,0.5702,away_win,0.5702
+C,Brazil,Morocco,0.6276,0.1749,0.1975,home_win,0.6276
+C,Brazil,Haiti,0.7792,0.1361,0.0847,home_win,0.7792
+C,Brazil,Scotland,0.626,0.1344,0.2395,home_win,0.626
+C,Morocco,Haiti,0.6639,0.2223,0.1138,home_win,0.6639
+C,Morocco,Scotland,0.5564,0.2008,0.2429,home_win,0.5564
+C,Haiti,Scotland,0.1697,0.2323,0.5981,away_win,0.5981
+D,United States,Paraguay,0.4565,0.1761,0.3674,home_win,0.4565
+D,United States,Australia,0.5325,0.1833,0.2842,home_win,0.5325
+D,United States,Turkey,0.2736,0.1714,0.555,away_win,0.555
+D,Paraguay,Australia,0.4827,0.2181,0.2992,home_win,0.4827
+D,Paraguay,Turkey,0.3152,0.2026,0.4822,away_win,0.4822
+D,Australia,Turkey,0.2584,0.1765,0.5651,away_win,0.5651
+E,Germany,Curaçao,0.7662,0.1535,0.0803,home_win,0.7662
+E,Germany,Ivory Coast,0.7325,0.1458,0.1218,home_win,0.7325
+E,Germany,Ecuador,0.631,0.1874,0.1816,home_win,0.631
+E,Curaçao,Ivory Coast,0.1811,0.2321,0.5868,away_win,0.5868
+E,Curaçao,Ecuador,0.1137,0.1195,0.7668,away_win,0.7668
+E,Ivory Coast,Ecuador,0.2391,0.1512,0.6096,away_win,0.6096
+F,Netherlands,Japan,0.6116,0.1585,0.2299,home_win,0.6116
+F,Netherlands,Sweden,0.728,0.149,0.123,home_win,0.728
+F,Netherlands,Tunisia,0.7272,0.1459,0.1268,home_win,0.7272
+F,Japan,Sweden,0.6384,0.2114,0.1501,home_win,0.6384
+F,Japan,Tunisia,0.6844,0.17,0.1456,home_win,0.6844
+F,Sweden,Tunisia,0.499,0.2403,0.2608,home_win,0.499
+G,Belgium,Egypt,0.7247,0.1615,0.1139,home_win,0.7247
+G,Belgium,Iran,0.634,0.2038,0.1623,home_win,0.634
+G,Belgium,New Zealand,0.8113,0.1047,0.084,home_win,0.8113
+G,Egypt,Iran,0.2444,0.2152,0.5404,away_win,0.5404
+G,Egypt,New Zealand,0.5518,0.2515,0.1967,home_win,0.5518
+G,Iran,New Zealand,0.6565,0.2197,0.1237,home_win,0.6565
+H,Spain,Cape Verde,0.7807,0.1247,0.0946,home_win,0.7807
+H,Spain,Saudi Arabia,0.7569,0.1401,0.103,home_win,0.7569
+H,Spain,Uruguay,0.5908,0.1626,0.2466,home_win,0.5908
+H,Cape Verde,Saudi Arabia,0.442,0.2207,0.3373,home_win,0.442
+H,Cape Verde,Uruguay,0.1926,0.14,0.6674,away_win,0.6674
+H,Saudi Arabia,Uruguay,0.2084,0.1395,0.652,away_win,0.652
+I,France,Senegal,0.7406,0.1313,0.1281,home_win,0.7406
+I,France,Norway,0.6073,0.1769,0.2158,home_win,0.6073
+I,France,Iraq,0.7939,0.1212,0.085,home_win,0.7939
+I,Senegal,Norway,0.3692,0.1531,0.4777,away_win,0.4777
+I,Senegal,Iraq,0.683,0.1802,0.1368,home_win,0.683
+I,Norway,Iraq,0.7216,0.1538,0.1247,home_win,0.7216
+J,Argentina,Algeria,0.7312,0.1539,0.1149,home_win,0.7312
+J,Argentina,Austria,0.6256,0.1559,0.2185,home_win,0.6256
+J,Argentina,Jordan,0.7903,0.1164,0.0932,home_win,0.7903
+J,Algeria,Austria,0.3496,0.1634,0.487,away_win,0.487
+J,Algeria,Jordan,0.5963,0.2441,0.1596,home_win,0.5963
+J,Austria,Jordan,0.6871,0.1939,0.119,home_win,0.6871
+K,Portugal,Uzbekistan,0.7174,0.1423,0.1404,home_win,0.7174
+K,Portugal,Colombia,0.5528,0.1626,0.2846,home_win,0.5528
+K,Portugal,DR Congo,0.7554,0.1166,0.1281,home_win,0.7554
+K,Uzbekistan,Colombia,0.1833,0.1587,0.658,away_win,0.658
+K,Uzbekistan,DR Congo,0.4361,0.2606,0.3033,home_win,0.4361
+K,Colombia,DR Congo,0.7417,0.1237,0.1346,home_win,0.7417
+L,England,Ghana,0.7992,0.1239,0.0769,home_win,0.7992
+L,England,Panama,0.7406,0.1465,0.113,home_win,0.7406
+L,England,Croatia,0.6782,0.1483,0.1735,home_win,0.6782
+L,Ghana,Panama,0.2198,0.2287,0.5515,away_win,0.5515
+L,Ghana,Croatia,0.1274,0.1305,0.7421,away_win,0.7421
+L,Panama,Croatia,0.2271,0.1745,0.5984,away_win,0.5984

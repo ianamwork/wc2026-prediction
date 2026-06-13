@@ -1,0 +1,28 @@
+MODEL COMPARISON SUMMARY — 2022 FIFA World Cup Holdout
+======================================================
+Training set : 14,404 matches (1994–2022, excluding 2022 WC)
+Test set     : 64 matches (2022 FIFA World Cup)
+Features     : ['elo_home', 'elo_away', 'elo_delta', 'elo_avg', 'tier_num', 'is_neutral']
+Weights      : WC=4, continental=3, nations_league=2, qualifier=1
+
+XGBoost best hyperparams: max_depth=3, n_estimators=200
+XGBoost CV log-loss (5-fold): 0.8411
+
+Metric                         Poisson   XGBoost
+────────────────────────────────────────────────
+Log-loss                        1.0195    0.9821
+Accuracy                         56.2%     54.7%
+
+SHAP Feature Importance (XGBoost):
+   feature  mean_abs_shap
+ elo_delta       0.303631
+  tier_num       0.197477
+  elo_away       0.117764
+  elo_home       0.108097
+is_neutral       0.104991
+   elo_avg       0.048339
+
+Poisson coefs (HOME): {'const': 0.7267, 'elo_home': 0.00157, 'elo_away': -0.00177, 'tier_num': -0.01915, 'is_neutral': -0.11293}
+Poisson coefs (AWAY): {'const': 0.02042, 'elo_home': -0.00181, 'elo_away': 0.00173, 'tier_num': -0.00146, 'is_neutral': 0.27762}
+
+Baseline log-loss to beat: 0.9821
