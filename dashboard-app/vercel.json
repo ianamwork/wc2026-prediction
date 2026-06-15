@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/api/gamma/:path*", "destination": "https://gamma-api.polymarket.com/:path*" },
+    { "source": "/api/clob/:path*",  "destination": "https://clob.polymarket.com/:path*" },
+    { "source": "/api/wc/:path*",    "destination": "https://worldcup26.ir/:path*" }
+  ]
+}
