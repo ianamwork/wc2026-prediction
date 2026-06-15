@@ -9,11 +9,14 @@ Sample weights: world_cup=4, continental=3, nations_league=2, qualifier=1
 import warnings
 warnings.filterwarnings("ignore")
 
+from pathlib import Path
 import numpy as np
 import pandas as pd
 import xgboost as xgb
 import shap
 from sklearn.metrics import log_loss, accuracy_score
+
+BASE = Path(__file__).resolve().parent.parent  # repo root
 
 # ── reproducibility ─────────────────────────────────────────────────────────
 SEED = 42
@@ -21,7 +24,7 @@ SEED = 42
 # ── load data ────────────────────────────────────────────────────────────────
 print("Loading data...")
 df = pd.read_csv(
-    "/Users/ianwork/wc2026-prediction/data/processed/training_matches_v3.csv",
+    BASE / "data" / "processed" / "training_matches_v3.csv",
     parse_dates=["date"],
 )
 print(f"  Full dataset: {df.shape}")
@@ -183,7 +186,7 @@ for _, row in shap_df.head(15).iterrows():
     print(f"  {row['feature']:<34}  {row['mean_abs_shap']:.5f}")
 
 shap_df.to_csv(
-    "/Users/ianwork/wc2026-prediction/data/processed/shap_v3_feature_importance.csv",
+    BASE / "data" / "processed" / "shap_v3_feature_importance.csv",
     index=False,
 )
 print("\nSaved: shap_v3_feature_importance.csv")
@@ -298,7 +301,7 @@ for name, proba in all_probas.items():
     pred_df[f"{name}_logloss"]    = per_match_logloss(proba, y_hold)
 
 pred_df.to_csv(
-    "/Users/ianwork/wc2026-prediction/models/predictions/model_v3_predictions_2022.csv",
+    BASE / "models" / "predictions" / "model_v3_predictions_2022.csv",
     index=False,
 )
 print("\n\nSaved: model_v3_predictions_2022.csv")

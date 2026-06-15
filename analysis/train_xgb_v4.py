@@ -14,6 +14,7 @@ Key regularization: max_depth=3, reg_alpha=1.0, reg_lambda=3.0, min_child_weight
 import warnings
 warnings.filterwarnings("ignore")
 
+from pathlib import Path
 import itertools
 import numpy as np
 import pandas as pd
@@ -23,12 +24,14 @@ from sklearn.metrics import log_loss, accuracy_score
 from sklearn.model_selection import StratifiedKFold
 from sklearn.calibration import CalibratedClassifierCV
 
+BASE = Path(__file__).resolve().parent.parent  # repo root
+
 SEED = 42
 
 # ── load data ─────────────────────────────────────────────────────────────────
 print("Loading data...")
 df = pd.read_csv(
-    "/Users/ianwork/wc2026-prediction/data/processed/training_matches_v3.csv",
+    BASE / "data" / "processed" / "training_matches_v3.csv",
     parse_dates=["date"],
 )
 print(f"  Full dataset: {df.shape}")
@@ -70,7 +73,7 @@ available_form = [f for f in ALL_FORM_FEATS if f in df_train.columns]
 form_train = df_train[available_form].fillna(df_train[available_form].median())
 
 print(f"\n{'='*70}")
-print("STEP 1 — Correlation matrix of {len(available_form)} form features (training set)")
+print(f"STEP 1 — Correlation matrix of {len(available_form)} form features (training set)")
 print(f"{'='*70}")
 
 corr = form_train.corr().round(2)
@@ -392,6 +395,6 @@ for tag, proba in [("M1", proba_m1), ("M4", proba_m4), ("M5", proba_m5), ("M6", 
     pred_df[f"{tag}_pred"]       = [label_names[i] for i in np.argmax(proba, axis=1)]
     pred_df[f"{tag}_logloss"]    = per_match_logloss(proba, y_hold)
 
-out_path = "/Users/ianwork/wc2026-prediction/models/predictions/model_v4_predictions_2022.csv"
+out_path = BASE / "models" / "predictions" / "model_v4_predictions_2022.csv"
 pred_df.to_csv(out_path, index=False)
 print(f"\n\nSaved: model_v4_predictions_2022.csv  ({pred_df.shape})")

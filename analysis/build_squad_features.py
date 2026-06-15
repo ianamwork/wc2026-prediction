@@ -3,8 +3,12 @@ Build squad quality features from FBref top-5-league player data.
 Produces squad_quality_2026.csv and training_matches_v3.csv.
 """
 
+from pathlib import Path
 import pandas as pd
 import numpy as np
+
+BASE      = Path(__file__).resolve().parent.parent  # repo root
+DOWNLOADS = Path.home() / "Downloads"               # external data source
 
 # ---------------------------------------------------------------------------
 # Nation code → training-data team name mapping
@@ -139,7 +143,7 @@ NAT_MAP = {
 # ---------------------------------------------------------------------------
 print("Loading FBref player data...")
 path = (
-    "/Users/ianwork/Downloads/"
+    DOWNLOADS /
     "team stats for 2022 world cup and 2026 qualifiers - top 5 league players.csv"
 )
 raw = pd.read_csv(path, header=1)
@@ -224,7 +228,7 @@ print(f"Nations with squad data: {len(squad)}")
 # ---------------------------------------------------------------------------
 # Save squad_quality_2026.csv
 # ---------------------------------------------------------------------------
-out_squad = "/Users/ianwork/wc2026-prediction/data/processed/squad_quality_2026.csv"
+out_squad = BASE / "data" / "processed" / "squad_quality_2026.csv"
 squad.to_csv(out_squad, index=False)
 print(f"Saved: {out_squad}")
 
@@ -243,7 +247,7 @@ print(squad.tail(15)[["nation", "squad_size_top5", "squad_avg_ga_per90", "squad_
 # ---------------------------------------------------------------------------
 print("\nBuilding training_matches_v3.csv...")
 train = pd.read_csv(
-    "/Users/ianwork/wc2026-prediction/data/processed/training_matches_v2.csv",
+    BASE / "data" / "processed" / "training_matches_v2.csv",
     parse_dates=["date"],
 )
 
@@ -253,7 +257,7 @@ train["home_squad_size_top5"] = train["home_team"].map(squad_lookup)
 train["away_squad_size_top5"] = train["away_team"].map(squad_lookup)
 train["delta_squad_size_top5"] = train["home_squad_size_top5"] - train["away_squad_size_top5"]
 
-out_train = "/Users/ianwork/wc2026-prediction/data/processed/training_matches_v3.csv"
+out_train = BASE / "data" / "processed" / "training_matches_v3.csv"
 train.to_csv(out_train, index=False)
 
 print(f"Saved: {out_train}")

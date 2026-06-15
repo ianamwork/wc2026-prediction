@@ -16,6 +16,7 @@ import itertools
 import time
 from collections import defaultdict
 
+from pathlib import Path
 import numpy as np
 import pandas as pd
 import shap
@@ -23,6 +24,8 @@ import xgboost as xgb
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.metrics import log_loss, accuracy_score
 from sklearn.model_selection import StratifiedKFold
+
+BASE = Path(__file__).resolve().parent.parent  # repo root
 
 SEED = 42
 rng  = np.random.default_rng(SEED)
@@ -66,7 +69,7 @@ print("STEP 1 — Building 2026 team feature vectors")
 print("=" * 70)
 
 # ── Load Elo ratings ──────────────────────────────────────────────────────────
-elo_raw = pd.read_csv("/Users/ianwork/wc2026-prediction/data/raw/eloratings.csv")
+elo_raw = pd.read_csv(BASE / "data" / "raw" / "eloratings.csv")
 elo_raw["team"] = elo_raw["team"].str.replace("\xa0", " ", regex=False)
 # Mixed formats: early entries YYYY-MM-DD, newer M/D/YYYY — parse both
 iso_dates  = pd.to_datetime(elo_raw["date"], format="%Y-%m-%d", errors="coerce")
@@ -92,7 +95,7 @@ for t in ALL_TEAMS:
 
 # ── Load squad quality ────────────────────────────────────────────────────────
 sq = pd.read_csv(
-    "/Users/ianwork/wc2026-prediction/data/processed/squad_quality_2026.csv"
+    BASE / "data" / "processed" / "squad_quality_2026.csv"
 )
 sq_dict = dict(zip(sq["nation"], sq["squad_size_top5"]))
 
@@ -106,7 +109,7 @@ for t in ALL_TEAMS:
 
 # ── Load intl results for form computation ────────────────────────────────────
 raw = pd.read_csv(
-    "/Users/ianwork/wc2026-prediction/data/raw/intl_football_results.csv",
+    BASE / "data" / "raw" / "intl_football_results.csv",
     parse_dates=["date"],
 )
 raw = raw.dropna(subset=["home_score", "away_score"]).copy()
@@ -216,7 +219,7 @@ tf_df = pd.DataFrame(team_features).T.reset_index().rename(columns={"index": "te
 tf_df["group"] = tf_df["team"].map(TEAM_GROUP)
 tf_df = tf_df.sort_values("elo", ascending=False).reset_index(drop=True)
 tf_df.to_csv(
-    "/Users/ianwork/wc2026-prediction/data/processed/teams_2026_features.csv",
+    BASE / "data" / "processed" / "teams_2026_features.csv",
     index=False,
 )
 
@@ -235,7 +238,7 @@ print("STEP 2 — Retrain M6 on training data")
 print("=" * 70)
 
 df = pd.read_csv(
-    "/Users/ianwork/wc2026-prediction/data/processed/training_matches_v3.csv",
+    BASE / "data" / "processed" / "training_matches_v3.csv",
     parse_dates=["date"],
 )
 label_map  = {"home_win": 0, "draw": 1, "away_win": 2}
@@ -320,9 +323,9 @@ def build_match_features(home, away, ref_ord=REF_ORD):
         "elo_avg":                   (elo_h + elo_a) / 2,
         "tier_num":                  1,
         "is_neutral":                1,
-        "delta_form_last5":          (hf["form_last5"] or 0) - (af["form_last5"] or 0),
-        "delta_goals_conceded_12mo": (hf["goals_conceded_12mo"] or 0) - (af["goals_conceded_12mo"] or 0),
-        "delta_goal_diff_12mo":      (hf["goal_diff_12mo"] or 0) - (af["goal_diff_12mo"] or 0),
+        "delta_form_last5":          hf["form_last5"] - af["form_last5"],
+        "delta_goals_conceded_12mo": hf["goals_conceded_12mo"] - af["goals_conceded_12mo"],
+        "delta_goal_diff_12mo":      hf["goal_diff_12mo"] - af["goal_diff_12mo"],
         "home_days_since_last":      hf["days_since_last"],
         "away_days_since_last":      af["days_since_last"],
         "delta_h2h_net_wins":        h_net - a_net,
@@ -363,7 +366,7 @@ for grp, teams in WC_GROUPS.items():
 
 gm_df = pd.DataFrame(group_match_rows)
 gm_df.to_csv(
-    "/Users/ianwork/wc2026-prediction/models/predictions/group_stage_predictions.csv",
+    BASE / "models" / "predictions" / "group_stage_predictions.csv",
     index=False,
 )
 print("\nSaved: group_stage_predictions.csv")
@@ -372,6 +375,8 @@ print("\nSaved: group_stage_predictions.csv")
 print("\n" + "=" * 70)
 print("STEP 3 — Monte Carlo group stage simulation (10,000 runs)")
 print("=" * 70)
+
+rng_groups = np.random.default_rng(SEED)      # isolated RNG for group stage
 
 N_SIM = 10_000
 
@@ -438,7 +443,7 @@ for sim_i in range(N_SIM):
     group_ranked_pts = {}
 
     for grp, teams in WC_GROUPS.items():
-        ranked = simulate_group(teams, match_prob_cache, rng)
+        ranked = simulate_group(teams, match_prob_cache, rng_groups)
         sim_result[grp] = ranked  # [(team, pts, gd, gf), ...]
         for pos, (team, pts_val, gd_val, gf_val) in enumerate(ranked, start=1):
             finish_counts[team][pos] += 1
@@ -476,7 +481,7 @@ for sim_result in sim_group_results:
     third_place = []
     for grp, ranked in sim_result.items():
         team, pts_val, gd_val, gf_val = ranked[2]
-        third_place.append((pts_val, gd_val, gf_val, rng.random(), team))
+        third_place.append((pts_val, gd_val, gf_val, rng_groups.random(), team))
 
     # Sort descending (best 3rd-place teams advance)
     third_place.sort(key=lambda x: (x[0], x[1], x[2], x[3]), reverse=True)
@@ -491,7 +496,7 @@ adv_df["p_advance"] = (
 ).round(4)
 
 adv_df.to_csv(
-    "/Users/ianwork/wc2026-prediction/models/predictions/group_advancement_probabilities.csv",
+    BASE / "models" / "predictions" / "group_advancement_probabilities.csv",
     index=False,
 )
 
@@ -511,6 +516,8 @@ print("Saved: group_advancement_probabilities.csv")
 print("\n" + "=" * 70)
 print("STEP 4 — Full tournament Monte Carlo (10,000 runs)")
 print("=" * 70)
+
+rng_knockout = np.random.default_rng(SEED + 1)  # isolated RNG for knockout stage
 
 # Match prediction cache for any matchup (computed on demand)
 ko_prob_cache = {}
@@ -594,8 +601,8 @@ print("  Running tournament simulations...")
 t0 = time.time()
 
 for sim_i, sim_result in enumerate(sim_group_results):
-    qualifiers = get_32_qualifiers(sim_result, rng)
-    reached    = run_bracket(qualifiers, rng)
+    qualifiers = get_32_qualifiers(sim_result, rng_knockout)
+    reached    = run_bracket(qualifiers, rng_knockout)
 
     for team, stage in reached.items():
         if stage is None:
@@ -626,7 +633,7 @@ for team in ALL_TEAMS:
 
 tourn_df = pd.DataFrame(tourn_rows).sort_values("win_pct", ascending=False).reset_index(drop=True)
 tourn_df.to_csv(
-    "/Users/ianwork/wc2026-prediction/models/predictions/tournament_simulation_results.csv",
+    BASE / "models" / "predictions" / "tournament_simulation_results.csv",
     index=False,
 )
 

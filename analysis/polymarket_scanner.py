@@ -3,11 +3,14 @@ Live Polymarket value bet scanner for WC 2026 group stage.
 Compares M6 model probabilities vs live Polymarket market prices.
 """
 
+from pathlib import Path
 import json
 import time
 import requests
 import pandas as pd
 import numpy as np
+
+BASE = Path(__file__).resolve().parent.parent  # repo root
 
 HEADERS = {"Accept-Encoding": "gzip, deflate"}
 
@@ -161,7 +164,7 @@ print("STEP 3 — Merging with M6 model predictions")
 print(f"{'='*70}")
 
 model_df = pd.read_csv(
-    "/Users/ianwork/wc2026-prediction/models/predictions/group_stage_predictions.csv"
+    BASE / "models" / "predictions" / "group_stage_predictions.csv"
 )
 model_df = model_df.rename(columns={
     "home": "home_model", "away": "away_model",
@@ -209,9 +212,9 @@ for _, pm in poly_df.iterrows():
     mkt_p_best = mkt_probs[best_dir]
     mdl_p_best = mdl_probs[best_dir]
 
-    # Kelly fraction: f = (edge) / (odds - 1)  where odds = 1/mkt_p
+    # Kelly fraction: f = (b*p - q) / b  where b=odds-1, p=mdl_prob, q=1-p
     odds_best = 1 / mkt_p_best if mkt_p_best > 0 else 999
-    kelly_full = best_edge / (odds_best - 1) if odds_best > 1 else 0
+    kelly_full = (mdl_p_best * odds_best - (1 - mdl_p_best)) / odds_best if odds_best > 1 else 0
     kelly_quarter = kelly_full / 4
 
     # Model favourite vs market favourite
@@ -278,7 +281,7 @@ for _, r in results_df.iterrows():
           f"{sign}{r.best_edge:>5.1%} {max(r.kelly_quarter,0):>7.2%}  {flags}")
 
 # ── Save CSV ─────────────────────────────────────────────────────────────
-out_csv = "/Users/ianwork/wc2026-prediction/models/predictions/value_bets_live.csv"
+out_csv = BASE / "models" / "predictions" / "value_bets_live.csv"
 results_df.to_csv(out_csv, index=False)
 print(f"\nSaved: value_bets_live.csv  ({len(results_df)} rows)")
 
@@ -302,7 +305,7 @@ for _, r in top10.iterrows():
 summary_lines += ["=" * 80,
     "⚡ = edge ≥ 5%  |  ↕ = model and market disagree on favourite  |  ¼Kelly = conservative sizing"]
 
-summary_path = "/Users/ianwork/wc2026-prediction/models/predictions/value_bets_summary.txt"
+summary_path = BASE / "models" / "predictions" / "value_bets_summary.txt"
 with open(summary_path, "w") as f:
     f.write("\n".join(summary_lines))
 print(f"Saved: value_bets_summary.txt")
@@ -343,7 +346,7 @@ if wc_winner:
 
     # Load model tournament results
     tourn = pd.read_csv(
-        "/Users/ianwork/wc2026-prediction/models/predictions/tournament_simulation_results.csv"
+        BASE / "models" / "predictions" / "tournament_simulation_results.csv"
     )
     tourn["model_win_prob"] = tourn["win_pct"] / 100
 
@@ -356,7 +359,7 @@ if wc_winner:
         mdl_p = tr["model_win_prob"]
         edge  = mdl_p - mkt_p
         odds  = 1 / mkt_p if mkt_p > 0 else 999
-        kelly = edge / (odds - 1) if odds > 1 and edge > 0 else 0
+        kelly = (mdl_p * odds - (1 - mdl_p)) / odds if odds > 1 and edge > 0 else 0
         winner_rows.append({
             "team":     team,
             "group":    tr["group"],

@@ -7,9 +7,10 @@ the XGBoost model. Saves:
   - model_v2_predictions_2022.csv      (2022 WC holdout predictions)
   - shap_v2_feature_importance.csv     (SHAP values)
 
-Run: python3 /Users/ianwork/Downloads/build_features_v2.py
+Run: python3 models/build_features.py
 """
 
+from pathlib import Path
 import pandas as pd
 import numpy as np
 import warnings, time
@@ -21,12 +22,12 @@ from sklearn.metrics import log_loss
 import shap
 
 t_start = time.time()
-DOWNLOADS = '/Users/ianwork/Downloads/'
+DOWNLOADS = Path.home() / "Downloads"
 
 # ═══════════════════════════════════════════════════════════════════════════
 # LOAD
 # ═══════════════════════════════════════════════════════════════════════════
-df = pd.read_csv(DOWNLOADS + 'training_matches_full.csv')
+df = pd.read_csv(DOWNLOADS / 'training_matches_full.csv')
 df['date'] = pd.to_datetime(df['date'])
 df = df.sort_values('date').reset_index(drop=True)   # index = match_idx 0..N-1
 print(f"Loaded {len(df):,} matches  ({df.date.min().date()} – {df.date.max().date()})")
@@ -177,7 +178,7 @@ for c in check_cols:
     print(f"  {c:<38} {pct:5.1f}%")
 
 # Save v2
-out_path = DOWNLOADS + 'training_matches_full_v2.csv'
+out_path = DOWNLOADS / 'training_matches_full_v2.csv'
 df.to_csv(out_path, index=False)
 print(f"\nSaved → {out_path}  ({len(df):,} rows × {len(df.columns)} cols)")
 
@@ -282,9 +283,9 @@ pred_out['predicted']    = [RESULT_NAMES[i] for i in np.argmax(new_probs, axis=1
 eps = 1e-9
 act_enc = np.eye(3)[actual]
 pred_out['match_logloss'] = (-np.sum(act_enc * np.log(new_probs+eps), axis=1)).round(4)
-pred_out.to_csv(DOWNLOADS + 'model_v2_predictions_2022.csv', index=False)
+pred_out.to_csv(DOWNLOADS / 'model_v2_predictions_2022.csv', index=False)
 
-shap_df.to_csv(DOWNLOADS + 'shap_v2_feature_importance.csv', index=False)
+shap_df.to_csv(DOWNLOADS / 'shap_v2_feature_importance.csv', index=False)
 
 total_time = time.time() - t_start
 print(f"\nSaved → model_v2_predictions_2022.csv")

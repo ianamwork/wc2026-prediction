@@ -15,22 +15,25 @@ Features (8 per team, 16 total, plus 8 delta columns):
   h2h_net_wins      - net wins vs opponent in last 5 H2H meetings (from each team's perspective)
 """
 
+from pathlib import Path
 import pandas as pd
 import numpy as np
 from collections import defaultdict
 import bisect
 import time
 
+BASE = Path(__file__).resolve().parent.parent  # repo root
+
 # ---------------------------------------------------------------------------
 # Load data
 # ---------------------------------------------------------------------------
 print("Loading data...")
 train = pd.read_csv(
-    "/Users/ianwork/wc2026-prediction/data/processed/training_matches_full.csv",
+    BASE / "data" / "processed" / "training_matches_full.csv",
     parse_dates=["date"],
 )
 raw = pd.read_csv(
-    "/Users/ianwork/wc2026-prediction/data/raw/intl_football_results.csv",
+    BASE / "data" / "raw" / "intl_football_results.csv",
     parse_dates=["date"],
 )
 
@@ -260,7 +263,7 @@ for col in delta_cols:
 # ---------------------------------------------------------------------------
 # Save
 # ---------------------------------------------------------------------------
-out_path = "/Users/ianwork/wc2026-prediction/data/processed/training_matches_v2.csv"
+out_path = BASE / "data" / "processed" / "training_matches_v2.csv"
 out.to_csv(out_path, index=False)
 print(f"\nSaved to {out_path}")
 print(f"Shape: {out.shape}")
