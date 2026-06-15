@@ -108,7 +108,9 @@ def neg_dc_loglik(rho):
         lh, la = lam_h_train[i], lam_a_train[i]
         t = tau(x, y, lh, la, rho)
         if t <= 0: return 1e9
-        total += poisson.logpmf(x,lh) + poisson.logpmf(y,la) + np.log(t+eps)
+        term = poisson.logpmf(x, lh) + poisson.logpmf(y, la) + np.log(t + eps)
+        if np.isfinite(term):
+            total += term
     return -total
 
 result   = minimize_scalar(neg_dc_loglik, bounds=(-0.99,0.0), method='bounded')

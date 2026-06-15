@@ -154,8 +154,10 @@ def get_team_features(team, match_date_ord):
 
     last5 = pts[max(0, idx - 5) : idx]
     last10 = pts[max(0, idx - 10) : idx]
-    out["form_last5"] = float(last5.sum()) / 15.0
-    out["form_last10"] = float(last10.sum()) / 30.0
+    k5  = len(last5)
+    k10 = len(last10)
+    out["form_last5"]  = float(last5.sum())  / (3.0 * k5)  if k5  > 0 else np.nan
+    out["form_last10"] = float(last10.sum()) / (3.0 * k10) if k10 > 0 else np.nan
 
     # Trailing 12 months
     cutoff_12mo = match_date_ord - DAYS_365

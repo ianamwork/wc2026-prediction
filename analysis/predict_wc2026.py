@@ -557,6 +557,11 @@ def get_32_qualifiers(sim_result, rng_):
     qualifiers += [x[4] for x in third_place[:8]]
     return qualifiers  # 32 teams
 
+# NOTE: Uses snake bracket pairing (seed 1 vs 32, 2 vs 31, etc.) rather than
+# the actual FIFA bracket structure. This means seeds 1 and 2 can meet in the
+# semifinal, which wouldn't happen in the real draw. This is a known simplification.
+# For a more accurate simulation, implement the official FIFA bracket mapping
+# where group winners face runners-up from specific other groups.
 def run_bracket(qualifiers, rng_):
     """
     Seeded bracket: seed 1 vs 32, 2 vs 31, ..., 16 vs 17.
