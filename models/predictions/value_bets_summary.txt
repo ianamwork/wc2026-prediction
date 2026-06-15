@@ -1,0 +1,17 @@
+WC 2026 VALUE BET SCANNER — Top 10
+Generated: 2026-06-14 11:42
+================================================================================
+MATCH                              BET ON                  MODEL  MARKET    EDGE  ¼KELLY
+--------------------------------------------------------------------------------
+Ghana vs Panama                    Panama                  55.1%   28.4% +26.8%   2.65%
+Ecuador vs Ivory Coast             Ecuador                 61.0%   37.3% +23.6%   3.52%
+Turkey vs United States            Turkey                  55.5%   33.7% +21.8%   2.77%
+Japan vs Sweden                    Japan                   63.8%   45.8% +18.0%   3.81%
+Japan vs Netherlands               Netherlands             61.2%   45.3% +15.9%   3.29%
+Croatia vs Ghana                   Croatia                 74.2%   58.8% +15.4%   5.50%
+Germany vs Curaçao                 Draw                    15.3%    0.1% +15.3%   0.00%
+Netherlands vs Sweden              Netherlands             72.8%   59.2% +13.6%   4.93%
+DR Congo vs Uzbekistan             Uzbekistan              43.6%   30.9% +12.8%   1.42%
+Egypt vs Belgium                   Belgium                 72.5%   60.2% +12.3%   4.64%
+================================================================================
+⚡ = edge ≥ 5%  |  ↕ = model and market disagree on favourite  |  ¼Kelly = conservative sizing
