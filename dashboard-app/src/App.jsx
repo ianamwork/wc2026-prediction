@@ -11,6 +11,7 @@ import { useScores, findScore } from './hooks/useScores';
 import { TOURNAMENT_PREDICTIONS } from './data/modelPredictions';
 import { MATCH_SCHEDULE, SCHEDULE_DATES, TODAY, formatDate, MODEL_SCORECARD } from './data/matchSchedule';
 import { getFlag } from './data/teamMapping';
+import { getMatchColors, barTextColor, textSafeColor } from './data/teamColors';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -63,24 +64,47 @@ const enrichMatch = (match, liveScore, pred) => {
 };
 
 // ─── ProbBar ────────────────────────────────────────────────────────────────
+// homeTeam / awayTeam are used to derive colors and render flag end-caps.
+// colors = { home, draw, away } hex strings from getMatchColors().
 
-function ProbBar({ home, draw, away, type = 'model' }) {
+const DRAW_COLOR = '#9ca3af';
+
+function ProbBar({ home, draw, away, homeTeam, awayTeam, colors }) {
+  const hc = colors?.home || '#3b82f6';
+  const ac = colors?.away || '#6b7280';
   const hw = `${(home * 100).toFixed(1)}%`;
   const dw = `${(draw * 100).toFixed(1)}%`;
   const aw = `${(away * 100).toFixed(1)}%`;
-  const homeColor = type === 'model' ? 'bg-blue-500' : 'bg-orange-400';
 
   return (
-    <div className="flex h-4 rounded overflow-hidden text-[9px] font-semibold mono">
-      <div className={`${homeColor} prob-bar-fill flex items-center justify-center text-white overflow-hidden`} style={{ width: hw }}>
-        {home > 0.18 && hw}
+    <div className="flex items-center gap-1">
+      {/* Home flag end-cap */}
+      <span className="text-xs shrink-0 leading-none">{getFlag(homeTeam)}</span>
+
+      {/* Three-segment bar */}
+      <div className="flex-1 flex h-4 rounded overflow-hidden text-[9px] font-semibold mono">
+        <div
+          className="prob-bar-fill flex items-center justify-center overflow-hidden"
+          style={{ width: hw, backgroundColor: hc, color: barTextColor(hc) }}
+        >
+          {home > 0.20 && hw}
+        </div>
+        <div
+          className="prob-bar-fill flex items-center justify-center overflow-hidden"
+          style={{ width: dw, backgroundColor: DRAW_COLOR, color: '#fff' }}
+        >
+          {draw > 0.14 && dw}
+        </div>
+        <div
+          className="prob-bar-fill flex items-center justify-center overflow-hidden"
+          style={{ width: aw, backgroundColor: ac, color: barTextColor(ac) }}
+        >
+          {away > 0.20 && aw}
+        </div>
       </div>
-      <div className="bg-gray-300 prob-bar-fill flex items-center justify-center text-gray-700 overflow-hidden" style={{ width: dw }}>
-        {draw > 0.13 && dw}
-      </div>
-      <div className="bg-gray-400 prob-bar-fill flex items-center justify-center text-white overflow-hidden" style={{ width: aw }}>
-        {away > 0.18 && aw}
-      </div>
+
+      {/* Away flag end-cap */}
+      <span className="text-xs shrink-0 leading-none">{getFlag(awayTeam)}</span>
     </div>
   );
 }
@@ -114,6 +138,12 @@ function MatchRow({ match, pred }) {
     : pred.best_dir === 'away' ? pred.away
     : 'Draw'
     : null;
+
+  // Team-identity colors for bars and "Bet on" section
+  const matchColors = getMatchColors(match.home, match.away);
+  const betColor = betTeam === 'Draw'
+    ? DRAW_COLOR
+    : textSafeColor(pred?.best_dir === 'home' ? matchColors.home : matchColors.away);
 
   return (
     <div className={`
@@ -206,24 +236,24 @@ function MatchRow({ match, pred }) {
 
           {/* Prob bars + edge for upcoming with predictions */}
           {!isCompleted && pred && (
-            <div className="mt-1.5 space-y-1">
+            <div className="mt-1.5 space-y-1.5">
               <div className="flex items-center gap-2">
                 <span className="text-[9px] text-gray-400 w-10 shrink-0">Model</span>
                 <div className="flex-1">
-                  <ProbBar home={pred.mdl_home} draw={pred.mdl_draw} away={pred.mdl_away} type="model" />
+                  <ProbBar
+                    home={pred.mdl_home} draw={pred.mdl_draw} away={pred.mdl_away}
+                    homeTeam={match.home} awayTeam={match.away} colors={matchColors}
+                  />
                 </div>
-                <span className="text-[9px] mono text-gray-400 w-24 text-right">
-                  {pct(pred.mdl_home)} · {pct(pred.mdl_draw)} · {pct(pred.mdl_away)}
-                </span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-[9px] text-gray-400 w-10 shrink-0">Market</span>
                 <div className="flex-1">
-                  <ProbBar home={pred.mkt_home} draw={pred.mkt_draw} away={pred.mkt_away} type="market" />
+                  <ProbBar
+                    home={pred.mkt_home} draw={pred.mkt_draw} away={pred.mkt_away}
+                    homeTeam={match.home} awayTeam={match.away} colors={matchColors}
+                  />
                 </div>
-                <span className="text-[9px] mono text-gray-400 w-24 text-right">
-                  {pct(pred.mkt_home)} · {pct(pred.mkt_draw)} · {pct(pred.mkt_away)}
-                </span>
               </div>
             </div>
           )}
@@ -238,12 +268,10 @@ function MatchRow({ match, pred }) {
         {!isCompleted && pred && (
           <div className="shrink-0 text-right pl-2 border-l border-gray-100">
             <div className="text-[10px] text-gray-400 font-medium">Bet on</div>
-            <div className="text-xs font-semibold text-gray-700 mt-0.5">
+            <div className="text-xs font-semibold mt-0.5" style={{ color: betColor }}>
               {getFlag(betTeam === 'Draw' ? null : betTeam)}{betTeam === 'Draw' ? '' : ' '}{betTeam}
             </div>
-            <div className={`mono text-lg font-bold leading-tight mt-0.5 ${
-              edgePct >= 10 ? 'text-emerald-600' : edgePct >= 5 ? 'text-blue-600' : 'text-gray-500'
-            }`}>
+            <div className="mono text-lg font-bold leading-tight mt-0.5" style={{ color: betColor }}>
               {edgePct >= 0 ? '+' : ''}{edgePct.toFixed(1)}%
             </div>
             <div className="text-[9px] text-gray-400 mono">
@@ -461,26 +489,52 @@ function MatchBetsTab({ predictions, scoreMap }) {
                       <div className="mt-0.5 text-sm font-semibold text-gray-900">
                         {getFlag(pred.home)} {pred.home} <span className="text-gray-300 font-normal">vs</span> {pred.away} {getFlag(pred.away)}
                       </div>
-                      <div className="mt-1.5 space-y-0.5">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[9px] text-blue-500 w-9">Model</span>
-                          <ProbBar home={pred.mdl_home} draw={pred.mdl_draw} away={pred.mdl_away} type="model" />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[9px] text-orange-400 w-9">Market</span>
-                          <ProbBar home={pred.mkt_home} draw={pred.mkt_draw} away={pred.mkt_away} type="market" />
-                        </div>
-                      </div>
+                      {(() => {
+                        const mc = getMatchColors(pred.home, pred.away);
+                        return (
+                          <div className="mt-1.5 space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[9px] text-gray-400 w-9">Model</span>
+                              <div className="flex-1">
+                                <ProbBar
+                                  home={pred.mdl_home} draw={pred.mdl_draw} away={pred.mdl_away}
+                                  homeTeam={pred.home} awayTeam={pred.away} colors={mc}
+                                />
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[9px] text-gray-400 w-9">Market</span>
+                              <div className="flex-1">
+                                <ProbBar
+                                  home={pred.mkt_home} draw={pred.mkt_draw} away={pred.mkt_away}
+                                  homeTeam={pred.home} awayTeam={pred.away} colors={mc}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
-                    <div className="shrink-0 text-right">
-                      <div className="text-xs text-gray-500">Bet on <span className="font-semibold text-gray-800">{betTeam}</span></div>
-                      <div className={`mono text-xl font-bold ${edgePct >= 10 ? 'text-emerald-600' : edgePct >= 5 ? 'text-blue-600' : 'text-gray-600'}`}>
-                        +{edgePct.toFixed(1)}%
-                      </div>
-                      <div className="mono text-[10px] text-gray-400">
-                        ¼K {pct(pred.kelly_quarter)} · {fmt(pred.vol_24h)}
-                      </div>
-                    </div>
+                    {(() => {
+                      const mc = getMatchColors(pred.home, pred.away);
+                      const bc = betTeam === 'Draw'
+                        ? DRAW_COLOR
+                        : textSafeColor(pred.best_dir === 'home' ? mc.home : mc.away);
+                      return (
+                        <div className="shrink-0 text-right">
+                          <div className="text-xs text-gray-500">Bet on</div>
+                          <div className="text-xs font-semibold mt-0.5" style={{ color: bc }}>
+                            {getFlag(betTeam === 'Draw' ? null : betTeam)}{betTeam === 'Draw' ? '' : ' '}{betTeam}
+                          </div>
+                          <div className="mono text-xl font-bold" style={{ color: bc }}>
+                            +{edgePct.toFixed(1)}%
+                          </div>
+                          <div className="mono text-[10px] text-gray-400">
+                            ¼K {pct(pred.kelly_quarter)} · {fmt(pred.vol_24h)}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               );
