@@ -135,7 +135,7 @@ export const MATCH_SCHEDULE = [
     date: "2026-06-15", time: "9:00 PM", timezone: "ET",
     venue: "Lumen Field, Seattle",
     status: "upcoming", score: null,
-    modelNote: "Iran favored (~58%)",
+    modelSlug: "fifwc-irn-nzl-2026-06-15",
   },
   // ── JUNE 16 (Tuesday) ────────────────────────────────────────────
   {

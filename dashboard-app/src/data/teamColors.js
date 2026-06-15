@@ -72,6 +72,37 @@ const hexToRgb = (hex) => [
   parseInt(hex.slice(5, 7), 16),
 ];
 
+const hexToHsl = (hex) => {
+  const [r, g, b] = hexToRgb(hex).map(v => v / 255);
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+  const l = (max + min) / 2;
+  if (d === 0) return [0, 0, Math.round(l * 100)];
+  const s = d / (l > 0.5 ? 2 - max - min : max + min);
+  let h = 0;
+  if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+  else if (max === g) h = ((b - r) / d + 2) / 6;
+  else h = ((r - g) / d + 4) / 6;
+  return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
+};
+
+const hslToHex = (h, s, l) => {
+  s /= 100; l /= 100;
+  const a = s * Math.min(l, 1 - l);
+  const f = n => {
+    const k = (n + h / 30) % 12;
+    return Math.round(255 * (l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1)))
+      .toString(16).padStart(2, '0');
+  };
+  return '#' + [0, 8, 4].map(f).join('');
+};
+
+// Reduce saturation ~35pts and clamp lightness to 28–60% so colors read as
+// distinct but not eye-searing on the probability bars.
+const mute = (hex) => {
+  const [h, s, l] = hexToHsl(hex);
+  return hslToHex(h, Math.max(0, s - 35), Math.min(60, Math.max(28, l)));
+};
+
 const clamp = (v) => Math.max(0, Math.min(255, v));
 
 const rgbToHex = ([r, g, b]) =>
@@ -99,8 +130,8 @@ const shiftForContrast = (hex) => {
 // Draw is always #9ca3af. If the two team colors are too similar, the away
 // color is shifted so the two segments remain distinguishable.
 export const getMatchColors = (homeTeam, awayTeam) => {
-  const homeColor = TEAM_COLORS[homeTeam] || '#6b7280';
-  let   awayColor = TEAM_COLORS[awayTeam] || '#6b7280';
+  const homeColor = mute(TEAM_COLORS[homeTeam] || '#6b7280');
+  let   awayColor = mute(TEAM_COLORS[awayTeam] || '#6b7280');
 
   if (colorDistance(homeColor, awayColor) < 50) {
     awayColor = shiftForContrast(awayColor);
