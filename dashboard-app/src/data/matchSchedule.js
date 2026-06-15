@@ -103,7 +103,7 @@ export const MATCH_SCHEDULE = [
     id: "F1b", group: "F", home: "Sweden", away: "Tunisia",
     date: "2026-06-14", time: "9:00 PM", timezone: "ET",
     venue: "Arrowhead Stadium, Kansas City",
-    status: "completed", score: { home: 5, away: 0 },
+    status: "completed", score: { home: 5, away: 1 },
     modelSlug: "fifwc-swe-tun-2026-06-14",
     modelCorrect: true, // Sweden 49.9% most likely — won
     modelNote: "Sweden 49.9% · Draw 24.0% · Tunisia 26.1%",
@@ -113,14 +113,16 @@ export const MATCH_SCHEDULE = [
     id: "H1a", group: "H", home: "Spain", away: "Cape Verde",
     date: "2026-06-15", time: "12:00 PM", timezone: "ET",
     venue: "Arrowhead Stadium, Kansas City",
-    status: "upcoming", score: null,
-    modelNote: "Spain heavy favorites (~87%)",
+    status: "completed", score: { home: 0, away: 0 },
+    modelCorrect: false,
+    modelNote: "Spain ~87% favorites — draw surprise ❌",
   },
   {
     id: "G1a", group: "G", home: "Belgium", away: "Egypt",
     date: "2026-06-15", time: "3:00 PM", timezone: "ET",
     venue: "Lincoln Financial Field, Philadelphia",
-    status: "upcoming", score: null,
+    status: "completed", score: { home: 1, away: 1 },
+    modelCorrect: false, // Model: Belgium 72.5% — drew
     modelSlug: "fifwc-bel-egy-2026-06-15",
   },
   {

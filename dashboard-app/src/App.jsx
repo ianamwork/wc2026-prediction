@@ -47,9 +47,10 @@ const computeModelCorrect = (pred, homeScore, awayScore) => {
   return predicted === actual;
 };
 
-// Merge a live score into a MATCH_SCHEDULE entry (returns new object, not mutated)
+// Merge a live score into a MATCH_SCHEDULE entry (returns new object, not mutated).
+// Never overrides static entries already marked completed — those are authoritative.
 const enrichMatch = (match, liveScore, pred) => {
-  if (!liveScore) return match;
+  if (match.status === 'completed' || !liveScore) return match;
   const hasResult = liveScore.homeScore != null && liveScore.awayScore != null;
   return {
     ...match,
@@ -149,7 +150,7 @@ function MatchRow({ match, pred }) {
     <div className={`
       border-l-[3px] pl-4 py-3 transition-all
       ${isCompleted
-        ? 'border-l-gray-200 bg-transparent'
+        ? 'border-l-gray-100 bg-gray-50/40 opacity-80'
         : isLive
         ? 'border-l-emerald-500 bg-emerald-50/30'
         : isStrong
@@ -187,7 +188,7 @@ function MatchRow({ match, pred }) {
             </span>
 
             {/* Score or vs */}
-            {isCompleted && match.score ? (
+            {(isCompleted || isLive) && match.score ? (
               <span className="mono text-sm font-bold text-gray-900 mx-1">
                 {match.score.home} — {match.score.away}
               </span>
@@ -229,12 +230,20 @@ function MatchRow({ match, pred }) {
             )}
           </div>
 
-          {/* Model note for completed */}
-          {isCompleted && match.modelNote && (
-            <p className="text-[10px] text-gray-400 mt-0.5">{match.modelNote}</p>
+          {/* Completed: model note + compact stats */}
+          {isCompleted && (
+            <div className="mt-0.5 text-[10px] text-gray-400">
+              {match.modelNote && <p>{match.modelNote}</p>}
+              {pred && (
+                <p className="mono mt-0.5 text-gray-300">
+                  Model: {pct(pred.mdl_home)} · {pct(pred.mdl_draw)} · {pct(pred.mdl_away)}
+                  {pred.mkt_home > 0 && <> · Mkt: {pct(pred.mkt_home)} / {pct(pred.mkt_draw)} / {pct(pred.mkt_away)}</>}
+                </p>
+              )}
+            </div>
           )}
 
-          {/* Prob bars + edge for upcoming with predictions */}
+          {/* Prob bars for upcoming + live */}
           {!isCompleted && pred && (
             <div className="mt-1.5 space-y-1.5">
               <div className="flex items-center gap-2">
@@ -247,7 +256,9 @@ function MatchRow({ match, pred }) {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[9px] text-gray-400 w-10 shrink-0">Market</span>
+                <span className="text-[9px] text-gray-400 w-10 shrink-0">
+                  {isLive ? 'Now' : 'Market'}
+                </span>
                 <div className="flex-1">
                   <ProbBar
                     home={pred.mkt_home} draw={pred.mkt_draw} away={pred.mkt_away}
@@ -258,13 +269,13 @@ function MatchRow({ match, pred }) {
             </div>
           )}
 
-          {/* No model data note */}
+          {/* No model data note for upcoming */}
           {!isCompleted && !pred && match.modelNote && (
             <p className="text-[10px] text-gray-400 mt-0.5">{match.modelNote}</p>
           )}
         </div>
 
-        {/* Edge column */}
+        {/* Edge column — upcoming and live only */}
         {!isCompleted && pred && (
           <div className="shrink-0 text-right pl-2 border-l border-gray-100">
             <div className="text-[10px] text-gray-400 font-medium">Bet on</div>
@@ -434,21 +445,32 @@ function MatchBetsTab({ predictions, scoreMap }) {
           {SCHEDULE_DATES.map(date => {
             const dayMatches = matchesForDisplay.filter(m => m.date === date);
             if (dayMatches.length === 0) return null;
+
+            // Enrich with live scores first so we can sort by actual status
+            const enriched = dayMatches.map(m => {
+              const pred = m.modelSlug ? predBySlug[m.modelSlug] : null;
+              const live = findScore(scoreMap, m.home, m.away);
+              return { enrichedMatch: enrichMatch(m, live, pred), pred };
+            });
+
+            // Within each day: live → upcoming → completed
+            const STATUS_RANK = { live: 0, upcoming: 1, completed: 2 };
+            enriched.sort((a, b) =>
+              (STATUS_RANK[a.enrichedMatch.status] ?? 1) -
+              (STATUS_RANK[b.enrichedMatch.status] ?? 1)
+            );
+
             return (
               <div key={date}>
                 <div className="day-rule mb-3">{formatDate(date)}</div>
                 <div className="space-y-0 divide-y divide-gray-50">
-                  {dayMatches.map(m => {
-                    const pred = m.modelSlug ? predBySlug[m.modelSlug] : null;
-                    const live = findScore(scoreMap, m.home, m.away);
-                    return (
-                      <MatchRow
-                        key={m.id}
-                        match={enrichMatch(m, live, pred)}
-                        pred={pred}
-                      />
-                    );
-                  })}
+                  {enriched.map(({ enrichedMatch, pred }) => (
+                    <MatchRow
+                      key={enrichedMatch.id}
+                      match={enrichedMatch}
+                      pred={pred}
+                    />
+                  ))}
                 </div>
               </div>
             );
