@@ -981,7 +981,12 @@ export default function App() {
         </Tabs>
       </main>
       <footer className="border-t border-gray-100 py-4 text-center text-[10px] text-gray-300 mt-8 mono">
-        M6 XGBoost · 15,507 matches · Not financial advice · ianamwork/wc2026-prediction
+        M6 XGBoost · 15,507 matches · Not financial advice ·{' '}
+        <a href="https://ian-martinez.work/" target="_blank" rel="noopener noreferrer"
+          className="hover:text-gray-500 transition-colors">Ian Martinez</a>
+        {' · '}
+        <a href="https://github.com/ianamwork/wc2026-prediction" target="_blank" rel="noopener noreferrer"
+          className="hover:text-gray-500 transition-colors">GitHub</a>
       </footer>
     </div>
   );
