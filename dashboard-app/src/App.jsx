@@ -331,6 +331,10 @@ function MatchBetsTab({ predictions, scoreMap }) {
   // Group view: sort predictions list
   const filteredPreds = useMemo(() => {
     let list = predictions.filter(p => {
+      if (!showCompleted) {
+        const sched = MATCH_SCHEDULE.find(m => m.modelSlug === p.slug);
+        if (sched?.status === 'completed') return false;
+      }
       if (valueOnly && p.best_edge < 0.05) return false;
       if (groupFilter !== 'All' && p.group !== groupFilter) return false;
       return true;
@@ -341,7 +345,7 @@ function MatchBetsTab({ predictions, scoreMap }) {
       sort === 'group' ? a.group.localeCompare(b.group) || b.best_edge - a.best_edge : 0
     );
     return list;
-  }, [predictions, sort, groupFilter, valueOnly]);
+  }, [predictions, showCompleted, sort, groupFilter, valueOnly]);
 
   const valueBetsCount = predictions.filter(p => p.best_edge >= 0.05).length;
   const bestEdge = predictions.reduce((best, p) => p.best_edge > best.best_edge ? p : best, predictions[0]);
@@ -391,16 +395,14 @@ function MatchBetsTab({ predictions, scoreMap }) {
         >
           Value ≥5%
         </button>
-        {view === 'day' && (
-          <button
-            onClick={() => setShowCompleted(v => !v)}
-            className={`h-8 px-2.5 text-xs rounded border font-medium transition-colors ${
-              showCompleted ? 'bg-gray-100 text-gray-700 border-gray-200' : 'text-gray-400 border-gray-200'
-            }`}
-          >
-            {showCompleted ? 'Hide completed' : 'Show completed'}
-          </button>
-        )}
+        <button
+          onClick={() => setShowCompleted(v => !v)}
+          className={`h-8 px-2.5 text-xs rounded border font-medium transition-colors ${
+            showCompleted ? 'bg-gray-100 text-gray-700 border-gray-200' : 'text-gray-400 border-gray-200'
+          }`}
+        >
+          {showCompleted ? 'Hide completed' : 'Show completed'}
+        </button>
 
         <Separator orientation="vertical" className="h-5" />
 
