@@ -17,6 +17,10 @@ import { getMatchColors, barTextColor, textSafeColor } from './data/teamColors';
 
 const mono = (str) => <span className="mono">{str}</span>;
 const pct  = (v) => `${(v * 100).toFixed(1)}%`;
+const fmtPT = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/Los_Angeles',
+  hour: 'numeric', minute: '2-digit', hour12: true,
+});
 const pctR = (v, dec = 1) => `${v.toFixed(dec)}%`;
 const fmt  = (n) => n >= 1e6 ? `$${(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `$${(n / 1e3).toFixed(0)}k` : `$${n.toFixed(0)}`;
 const relTime = (d) => {
@@ -171,7 +175,9 @@ function MatchRow({ match, pred }) {
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />LIVE
             </span>
           ) : (
-            <span className="text-[11px] mono text-gray-600">{match.time}</span>
+            <span className="text-[11px] mono text-gray-600">
+              {match.kickoffUTC ? fmtPT.format(new Date(match.kickoffUTC)) : match.time} PT
+            </span>
           )}
           <div className="flex items-center gap-1 mt-0.5">
             <span className={`w-1.5 h-1.5 rounded-full ${GROUP_DOT[match.group]}`} />
@@ -439,12 +445,17 @@ function MatchBetsTab({ predictions, scoreMap }) {
               return { enrichedMatch: enrichMatch(m, live, pred), pred };
             });
 
-            // Within each day: live → upcoming → completed
+            // Within each day: live → upcoming → completed; then by kickoff time
             const STATUS_RANK = { live: 0, upcoming: 1, completed: 2 };
-            enriched.sort((a, b) =>
-              (STATUS_RANK[a.enrichedMatch.status] ?? 1) -
-              (STATUS_RANK[b.enrichedMatch.status] ?? 1)
-            );
+            enriched.sort((a, b) => {
+              const rankDiff =
+                (STATUS_RANK[a.enrichedMatch.status] ?? 1) -
+                (STATUS_RANK[b.enrichedMatch.status] ?? 1);
+              if (rankDiff !== 0) return rankDiff;
+              const ta = a.enrichedMatch.kickoffUTC ?? '';
+              const tb = b.enrichedMatch.kickoffUTC ?? '';
+              return ta < tb ? -1 : ta > tb ? 1 : 0;
+            });
 
             return (
               <div key={date}>
