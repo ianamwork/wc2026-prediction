@@ -305,7 +305,6 @@ function MatchRow({ match, pred }) {
 
 function MatchBetsTab({ predictions, scoreMap }) {
   const [view, setView]         = useState('day');   // 'day' | 'group'
-  const [minEdge, setMinEdge]   = useState([0]);
   const [groupFilter, setGroupFilter] = useState('All');
   const [valueOnly, setValueOnly]     = useState(false);
   const [sort, setSort]         = useState('edge');
@@ -324,18 +323,14 @@ function MatchBetsTab({ predictions, scoreMap }) {
       if (m.status !== 'completed') {
         const pred = m.modelSlug ? predBySlug[m.modelSlug] : null;
         if (valueOnly && (!pred || pred.best_edge < 0.05)) return false;
-        if (pred && pred.best_edge * 100 < minEdge[0]) {
-          if (m.status !== 'completed') return false;
-        }
       }
       return true;
     });
-  }, [predBySlug, groupFilter, showCompleted, valueOnly, minEdge]);
+  }, [predBySlug, groupFilter, showCompleted, valueOnly]);
 
   // Group view: sort predictions list
   const filteredPreds = useMemo(() => {
     let list = predictions.filter(p => {
-      if (p.best_edge * 100 < minEdge[0]) return false;
       if (valueOnly && p.best_edge < 0.05) return false;
       if (groupFilter !== 'All' && p.group !== groupFilter) return false;
       return true;
@@ -346,7 +341,7 @@ function MatchBetsTab({ predictions, scoreMap }) {
       sort === 'group' ? a.group.localeCompare(b.group) || b.best_edge - a.best_edge : 0
     );
     return list;
-  }, [predictions, minEdge, sort, groupFilter, valueOnly]);
+  }, [predictions, sort, groupFilter, valueOnly]);
 
   const valueBetsCount = predictions.filter(p => p.best_edge >= 0.05).length;
   const bestEdge = predictions.reduce((best, p) => p.best_edge > best.best_edge ? p : best, predictions[0]);
@@ -369,17 +364,6 @@ function MatchBetsTab({ predictions, scoreMap }) {
           >
             Edge view
           </button>
-        </div>
-
-        <Separator orientation="vertical" className="h-5" />
-
-        {/* Min edge */}
-        <div className="flex items-center gap-2">
-          <label className="text-xs text-gray-500 whitespace-nowrap">Min edge</label>
-          <div className="w-28">
-            <Slider value={minEdge} onValueChange={setMinEdge} min={0} max={15} step={1} />
-          </div>
-          <span className="mono text-xs text-gray-700 w-8">{minEdge[0]}%</span>
         </div>
 
         <Separator orientation="vertical" className="h-5" />
