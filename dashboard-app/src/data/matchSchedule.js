@@ -264,6 +264,13 @@ export const MATCH_SCHEDULE = [
     modelSlug: "fifwc-ecu-kor-2026-06-20",
   },
   {
+    id: "F2b", group: "F", home: "Tunisia", away: "Japan",
+    date: "2026-06-20", time: "6:00 PM", timezone: "ET",
+    venue: "Gillette Stadium, Boston",
+    status: "upcoming", score: null,
+    modelSlug: "fifwc-tun-jpn-2026-06-21",
+  },
+  {
     id: "F2a", group: "F", home: "Netherlands", away: "Sweden",
     date: "2026-06-20", time: "9:00 PM", timezone: "ET",
     venue: "Arrowhead Stadium, Kansas City",
@@ -277,13 +284,6 @@ export const MATCH_SCHEDULE = [
     venue: "Estadio Akron, Zapopan",
     status: "upcoming", score: null,
     modelSlug: "fifwc-esp-ksa-2026-06-21",
-  },
-  {
-    id: "F2b", group: "F", home: "Tunisia", away: "Japan",
-    date: "2026-06-21", time: "6:00 PM", timezone: "ET",
-    venue: "Gillette Stadium, Boston",
-    status: "upcoming", score: null,
-    modelSlug: "fifwc-tun-jpn-2026-06-21",
   },
   {
     id: "G2a", group: "G", home: "New Zealand", away: "Egypt",
