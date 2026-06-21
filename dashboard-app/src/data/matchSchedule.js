@@ -206,6 +206,12 @@ export const MATCH_SCHEDULE = [
     modelSlug: "fifwc-mex-kr-2026-06-18",
   },
   {
+    id: "B2b", group: "B", home: "Switzerland", away: "Bosnia and Herzegovina",
+    date: "2026-06-18", time: "3:00 PM", timezone: "ET", kickoffUTC: "2026-06-18T19:00:00Z",
+    venue: "SoFi Stadium, Inglewood",
+    status: "completed", score: { home: 4, away: 1 },
+  },
+  {
     id: "A2b", group: "A", home: "Czech Republic", away: "South Africa",
     date: "2026-06-18", time: "6:00 PM", timezone: "ET", kickoffUTC: "2026-06-18T22:00:00Z",
     venue: "Gillette Stadium, Boston",
@@ -286,6 +292,18 @@ export const MATCH_SCHEDULE = [
     modelSlug: "fifwc-esp-ksa-2026-06-21",
   },
   {
+    id: "G2b", group: "G", home: "Belgium", away: "Iran",
+    date: "2026-06-21", time: "3:00 PM", timezone: "ET", kickoffUTC: "2026-06-21T19:00:00Z",
+    venue: "SoFi Stadium, Inglewood",
+    status: "upcoming", score: null,
+  },
+  {
+    id: "H2b", group: "H", home: "Uruguay", away: "Cape Verde",
+    date: "2026-06-21", time: "6:00 PM", timezone: "ET", kickoffUTC: "2026-06-21T22:00:00Z",
+    venue: "Hard Rock Stadium, Miami Gardens",
+    status: "upcoming", score: null,
+  },
+  {
     id: "G2a", group: "G", home: "New Zealand", away: "Egypt",
     date: "2026-06-21", time: "9:00 PM", timezone: "ET", kickoffUTC: "2026-06-22T01:00:00Z",
     venue: "Lincoln Financial Field, Philadelphia",
@@ -364,6 +382,12 @@ export const MATCH_SCHEDULE = [
     venue: "Levi's Stadium, San Jose",
     status: "upcoming", score: null,
     modelSlug: "fifwc-sco-bra-2026-06-24",
+  },
+  {
+    id: "B3b", group: "B", home: "Bosnia and Herzegovina", away: "Qatar",
+    date: "2026-06-24", time: "3:00 PM", timezone: "ET", kickoffUTC: "2026-06-24T19:00:00Z",
+    venue: "Lumen Field, Seattle",
+    status: "upcoming", score: null,
   },
   {
     id: "C3b", group: "C", home: "Morocco", away: "Haiti",
@@ -457,6 +481,18 @@ export const MATCH_SCHEDULE = [
     venue: "BMO Field, Toronto",
     status: "upcoming", score: null,
     modelSlug: "fifwc-sen-irq-2026-06-26",
+  },
+  {
+    id: "H3b", group: "H", home: "Cape Verde", away: "Saudi Arabia",
+    date: "2026-06-26", time: "8:00 PM", timezone: "ET", kickoffUTC: "2026-06-27T00:00:00Z",
+    venue: "NRG Stadium, Houston",
+    status: "upcoming", score: null,
+  },
+  {
+    id: "G3b", group: "G", home: "Egypt", away: "Iran",
+    date: "2026-06-26", time: "11:00 PM", timezone: "ET", kickoffUTC: "2026-06-27T03:00:00Z",
+    venue: "Lumen Field, Seattle",
+    status: "upcoming", score: null,
   },
   // ── JUNE 27 (Saturday) — Final group matches ──────────────────────
   {
