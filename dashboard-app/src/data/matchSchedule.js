@@ -487,12 +487,14 @@ export const MATCH_SCHEDULE = [
     date: "2026-06-26", time: "8:00 PM", timezone: "ET", kickoffUTC: "2026-06-27T00:00:00Z",
     venue: "NRG Stadium, Houston",
     status: "upcoming", score: null,
+    modelSlug: "fifwc-cvi-ksa-2026-06-26",
   },
   {
     id: "G3b", group: "G", home: "Egypt", away: "Iran",
     date: "2026-06-26", time: "11:00 PM", timezone: "ET", kickoffUTC: "2026-06-27T03:00:00Z",
     venue: "Lumen Field, Seattle",
     status: "upcoming", score: null,
+    modelSlug: "fifwc-egy-irn-2026-06-26",
   },
   // ── JUNE 27 (Saturday) — Final group matches ──────────────────────
   {
@@ -542,7 +544,7 @@ export const MATCH_SCHEDULE = [
 // Unique dates in order
 export const SCHEDULE_DATES = [...new Set(MATCH_SCHEDULE.map(m => m.date))].sort();
 
-export const TODAY = "2026-06-15";
+export const TODAY = "2026-06-26";
 
 export const formatDate = (dateStr) => {
   const d = new Date(dateStr + 'T12:00:00');
