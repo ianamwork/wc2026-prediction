@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { usePolymarket } from './hooks/usePolymarket';
 import { useScores, findScore } from './hooks/useScores';
 import { TOURNAMENT_PREDICTIONS } from './data/modelPredictions';
+import { KNOCKOUT_PREDICTIONS } from './data/knockoutPredictions';
 import { MATCH_SCHEDULE, SCHEDULE_DATES, TODAY, formatDate, MODEL_SCORECARD } from './data/matchSchedule';
 import { getFlag } from './data/teamMapping';
 import { getMatchColors, barTextColor, textSafeColor } from './data/teamColors';
@@ -668,46 +669,171 @@ function TournamentTab() {
   );
 }
 
+// ─── R32 Match Row ────────────────────────────────────────────────────────────
+
+function R32MatchRow({ pred }) {
+  const colors = getMatchColors(pred.home, pred.away);
+  const favoredIsHome = pred.adj_home > pred.adj_away;
+  const favoredAdj    = Math.max(pred.adj_home, pred.adj_away);
+  const favoredColor  = textSafeColor(favoredIsHome ? colors.home : colors.away);
+
+  return (
+    <div className="border-l-[3px] border-l-gray-200 pl-4 py-3">
+      <div className="flex items-start gap-3">
+
+        {/* Match # · date · venue */}
+        <div className="w-20 shrink-0 pt-0.5">
+          <span className="mono text-[10px] text-gray-400">#{pred.matchNum}</span>
+          <div className="text-[11px] mono text-gray-700 mt-0.5">
+            {pred.date.slice(5).replace('-', '/')}
+          </div>
+          <div className="text-[10px] text-gray-400 truncate">{pred.venue}</div>
+        </div>
+
+        {/* Teams + model bar */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className={`text-sm font-semibold ${favoredIsHome ? 'text-gray-900' : 'text-gray-500'}`}>
+              {getFlag(pred.home)} {pred.home}
+            </span>
+            <span className="text-gray-300 text-xs">vs</span>
+            <span className={`text-sm font-semibold ${!favoredIsHome ? 'text-gray-900' : 'text-gray-500'}`}>
+              {pred.away} {getFlag(pred.away)}
+            </span>
+          </div>
+          <div className="mt-1.5 flex items-center gap-2">
+            <span className="text-[9px] text-gray-400 w-10 shrink-0">Model</span>
+            <div className="flex-1">
+              <ProbBar
+                home={pred.mdl_home} draw={pred.mdl_draw} away={pred.mdl_away}
+                homeTeam={pred.home} awayTeam={pred.away} colors={colors}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* KO adjusted win % */}
+        <div className="shrink-0 text-right pl-2 border-l border-gray-100 min-w-[72px]">
+          <div className="text-[10px] text-gray-400 font-medium">KO win</div>
+          <div className="text-[11px] font-semibold mt-0.5 text-gray-600 truncate">
+            {getFlag(pred.favored)} {pred.favored}
+          </div>
+          <div className="mono text-lg font-bold leading-tight" style={{ color: favoredColor }}>
+            {(favoredAdj * 100).toFixed(1)}%
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+// ─── Knockout bracket structure ───────────────────────────────────────────────
+
+const R32_BRACKET = [
+  {
+    half: 'Left half → Dallas SF (July 14)',
+    pairs: [
+      { dest: '→ Philadelphia QF · July 4', matchNums: [74, 77] },
+      { dest: '→ Houston QF · July 4',      matchNums: [73, 75] },
+      { dest: '→ Dallas QF · July 6',       matchNums: [83, 84] },
+      { dest: '→ Seattle QF · July 6',      matchNums: [81, 82] },
+    ],
+  },
+  {
+    half: 'Right half → Atlanta SF (July 15)',
+    pairs: [
+      { dest: '→ New York QF · July 5',     matchNums: [76, 78] },
+      { dest: '→ Mexico City QF · July 5',  matchNums: [79, 80] },
+      { dest: '→ Atlanta QF · July 7',      matchNums: [86, 88] },
+      { dest: '→ Vancouver QF · July 7',    matchNums: [85, 87] },
+    ],
+  },
+];
+
 // ─── Knockout Tab ─────────────────────────────────────────────────────────────
 
 function KnockoutTab() {
+  const predByNum = useMemo(() => {
+    const m = {};
+    for (const p of KNOCKOUT_PREDICTIONS) m[p.matchNum] = p;
+    return m;
+  }, []);
+
   const topTeams = TOURNAMENT_PREDICTIONS.filter(t => t.sf >= 5).sort((a, b) => b.win - a.win);
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-        <span className="text-amber-600 font-semibold text-xs">Work in progress</span>
-        <span className="text-amber-500 text-xs">—</span>
-        <span className="text-xs text-amber-600">
-          Knockout predictions will update as group stage results come in. Model re-runs Elo + form after each matchday.
-        </span>
-      </div>
-      <div className="border border-gray-200 rounded-lg overflow-hidden">
-        <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-200">
-          <p className="text-xs font-semibold text-gray-700">SF+ Contenders — Monte Carlo (10,000 simulations)</p>
+    <div className="space-y-6">
+
+      {/* ── R32 matchups ── */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h2 className="text-sm font-semibold text-gray-900">Round of 32</h2>
+            <p className="text-[11px] text-gray-400 mt-0.5">
+              KO win% = P(win) + ½·P(draw) · draws go to penalties
+            </p>
+          </div>
+          <span className="text-[10px] mono text-gray-400 bg-gray-50 border border-gray-200 px-2 py-1 rounded">
+            M6 · group stage form included
+          </span>
         </div>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-b border-gray-100">
-                {['Team','R32','R16','QF','SF','Final','Win'].map(h => (
-                  <TableHead key={h} className="text-[10px] text-gray-500 py-2">{h}</TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {topTeams.map(t => (
-                <TableRow key={t.team} className="border-b border-gray-50 hover:bg-gray-50/40">
-                  <TableCell className="text-xs font-medium py-2">{getFlag(t.team)} {t.team}</TableCell>
-                  {[t.r32, t.r16, t.qf, t.sf, t.final].map((v, i) => (
-                    <TableCell key={i} className="mono text-xs text-gray-600 py-2">{v.toFixed(0)}%</TableCell>
-                  ))}
-                  <TableCell className="mono text-xs font-bold text-emerald-600 py-2">{t.win.toFixed(1)}%</TableCell>
-                </TableRow>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {R32_BRACKET.map(({ half, pairs }) => (
+            <div key={half} className="space-y-3">
+              <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide pb-1 border-b border-gray-100">
+                {half}
+              </div>
+              {pairs.map(({ dest, matchNums }) => (
+                <div key={dest} className="border border-gray-100 rounded-lg overflow-hidden">
+                  <div className="px-3 py-1 bg-gray-50 border-b border-gray-100">
+                    <span className="text-[10px] text-gray-400 mono">{dest}</span>
+                  </div>
+                  <div className="divide-y divide-gray-50">
+                    {matchNums.map(num => {
+                      const pred = predByNum[num];
+                      return pred ? <R32MatchRow key={num} pred={pred} /> : null;
+                    })}
+                  </div>
+                </div>
               ))}
-            </TableBody>
-          </Table>
+            </div>
+          ))}
         </div>
       </div>
+
+      {/* ── Tournament odds table ── */}
+      <div>
+        <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide pb-1 mb-3 border-b border-gray-100">
+          Tournament win probability — SF+ contenders (Monte Carlo, 10k sims)
+        </div>
+        <div className="border border-gray-200 rounded-lg overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-b border-gray-100">
+                  {['Team', 'R32', 'R16', 'QF', 'SF', 'Final', 'Win%'].map(h => (
+                    <TableHead key={h} className="text-[10px] text-gray-500 py-2">{h}</TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {topTeams.map(t => (
+                  <TableRow key={t.team} className="border-b border-gray-50 hover:bg-gray-50/40">
+                    <TableCell className="text-xs font-medium py-2">{getFlag(t.team)} {t.team}</TableCell>
+                    {[t.r32, t.r16, t.qf, t.sf, t.final].map((v, i) => (
+                      <TableCell key={i} className="mono text-xs text-gray-600 py-2">{v.toFixed(0)}%</TableCell>
+                    ))}
+                    <TableCell className="mono text-xs font-bold text-emerald-600 py-2">{t.win.toFixed(1)}%</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }
@@ -956,14 +1082,11 @@ export default function App() {
       <Header predictions={predictions} isLive={isLive} isRefreshing={isRefreshing} lastUpdated={lastUpdated} retry={retry} modelAccuracy={modelAccuracy} scoreSource={scoreSource} />
       <main className="max-w-7xl mx-auto px-4 py-5 space-y-5">
         <StatsBar predictions={predictions} isRefreshing={isRefreshing} />
-        <Tabs defaultValue="matches">
+        <Tabs defaultValue="knockout">
           <TabsList className="bg-white border border-gray-200 shadow-none h-9">
+            <TabsTrigger value="knockout" className="text-xs h-7">Knockout</TabsTrigger>
             <TabsTrigger value="matches" className="text-xs h-7">Match Bets</TabsTrigger>
             <TabsTrigger value="tournament" className="text-xs h-7">Tournament Winner</TabsTrigger>
-            <TabsTrigger value="knockout" className="text-xs h-7 gap-1">
-              Knockout
-              <span className="text-[9px] px-1 bg-amber-100 text-amber-700 rounded font-medium">WIP</span>
-            </TabsTrigger>
             <TabsTrigger value="about" className="text-xs h-7">About</TabsTrigger>
           </TabsList>
           <TabsContent value="matches" className="mt-4">
