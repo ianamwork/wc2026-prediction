@@ -4,9 +4,11 @@
 // adj_home / adj_away = p_win + 0.5*p_draw (draws → penalties convention)
 // slug = Polymarket Gamma slug (null = not yet listed as of 2026-06-29)
 // Unconfirmed slugs (not yet on Polymarket): 79,80,82,83,84,85,87
-// Note: parseBinaryMarkets matches by homeTeam/awayTeam name; Polymarket may
-//       use "Côte d'Ivoire" for "Ivory Coast" and "Cabo Verde" for "Cape Verde"
-//       — market bar will be absent for those if groupItemTitle doesn't match.
+// pmHome / pmAway = Polymarket's actual groupItemTitle for team name matching;
+//   omit when identical to home/away. Confirmed mismatches:
+//   #78 home: "Ivory Coast" → Polymarket "Côte d'Ivoire"
+//   #86 away: "Cape Verde"  → Polymarket "Cabo Verde"
+//   #80 away: "DR Congo" — unverified; may need pmAway once slug goes live.
 
 export const KNOCKOUT_PREDICTIONS = [
   { matchNum: 73, match: "South Africa vs Canada", home: "South Africa", away: "Canada", date: "2026-06-28", venue: "Los Angeles", round: "R32", slug: "fifwc-rsa-can-2026-06-28", mdl_home: 0.184, mdl_draw: 0.2325, mdl_away: 0.5835, adj_home: 0.3003, adj_away: 0.6997, favored: "Canada", mkt_home: null, mkt_away: null },
@@ -14,7 +16,7 @@ export const KNOCKOUT_PREDICTIONS = [
   { matchNum: 75, match: "Netherlands vs Morocco", home: "Netherlands", away: "Morocco", date: "2026-06-29", venue: "Monterrey", round: "R32", slug: "fifwc-nld-mar-2026-06-29", mdl_home: 0.6183, mdl_draw: 0.1703, mdl_away: 0.2114, adj_home: 0.7034, adj_away: 0.2966, favored: "Netherlands", mkt_home: null, mkt_away: null },
   { matchNum: 76, match: "Brazil vs Japan", home: "Brazil", away: "Japan", date: "2026-06-29", venue: "Houston", round: "R32", slug: "fifwc-bra-jpn-2026-06-29", mdl_home: 0.6075, mdl_draw: 0.1848, mdl_away: 0.2077, adj_home: 0.6999, adj_away: 0.3001, favored: "Brazil", mkt_home: null, mkt_away: null },
   { matchNum: 77, match: "France vs Sweden", home: "France", away: "Sweden", date: "2026-06-30", venue: "New York", round: "R32", slug: "fifwc-fra-swe-2026-06-30", mdl_home: 0.7647, mdl_draw: 0.1306, mdl_away: 0.1047, adj_home: 0.83, adj_away: 0.17, favored: "France", mkt_home: null, mkt_away: null },
-  { matchNum: 78, match: "Ivory Coast vs Norway", home: "Ivory Coast", away: "Norway", date: "2026-06-30", venue: "Dallas", round: "R32", slug: "fifwc-civ-nor-2026-06-30", mdl_home: 0.1867, mdl_draw: 0.1468, mdl_away: 0.6665, adj_home: 0.2601, adj_away: 0.7399, favored: "Norway", mkt_home: null, mkt_away: null },
+  { matchNum: 78, match: "Ivory Coast vs Norway", home: "Ivory Coast", away: "Norway", pmHome: "Côte d'Ivoire", date: "2026-06-30", venue: "Dallas", round: "R32", slug: "fifwc-civ-nor-2026-06-30", mdl_home: 0.1867, mdl_draw: 0.1468, mdl_away: 0.6665, adj_home: 0.2601, adj_away: 0.7399, favored: "Norway", mkt_home: null, mkt_away: null },
   { matchNum: 79, match: "Mexico vs Ecuador", home: "Mexico", away: "Ecuador", date: "2026-06-30", venue: "Mexico City", round: "R32", slug: null, mdl_home: 0.4365, mdl_draw: 0.1854, mdl_away: 0.3781, adj_home: 0.5292, adj_away: 0.4708, favored: "Mexico", mkt_home: null, mkt_away: null },
   { matchNum: 80, match: "England vs DR Congo", home: "England", away: "DR Congo", date: "2026-07-01", venue: "Atlanta", round: "R32", slug: null, mdl_home: 0.7855, mdl_draw: 0.1193, mdl_away: 0.0952, adj_home: 0.8451, adj_away: 0.1549, favored: "England", mkt_home: null, mkt_away: null },
   { matchNum: 81, match: "United States vs Bosnia and Herzegovina", home: "United States", away: "Bosnia and Herzegovina", date: "2026-07-01", venue: "San Francisco", round: "R32", slug: "fifwc-usa-bih-2026-07-01", mdl_home: 0.6719, mdl_draw: 0.179, mdl_away: 0.1491, adj_home: 0.7614, adj_away: 0.2386, favored: "United States", mkt_home: null, mkt_away: null },
@@ -22,7 +24,7 @@ export const KNOCKOUT_PREDICTIONS = [
   { matchNum: 83, match: "Portugal vs Croatia", home: "Portugal", away: "Croatia", date: "2026-07-02", venue: "Toronto", round: "R32", slug: null, mdl_home: 0.6149, mdl_draw: 0.1641, mdl_away: 0.221, adj_home: 0.6969, adj_away: 0.3031, favored: "Portugal", mkt_home: null, mkt_away: null },
   { matchNum: 84, match: "Spain vs Austria", home: "Spain", away: "Austria", date: "2026-07-02", venue: "Los Angeles", round: "R32", slug: null, mdl_home: 0.4372, mdl_draw: 0.1562, mdl_away: 0.4067, adj_home: 0.5153, adj_away: 0.4847, favored: "Spain", mkt_home: null, mkt_away: null },
   { matchNum: 85, match: "Switzerland vs Algeria", home: "Switzerland", away: "Algeria", date: "2026-07-02", venue: "Vancouver", round: "R32", slug: null, mdl_home: 0.6775, mdl_draw: 0.1552, mdl_away: 0.1673, adj_home: 0.7551, adj_away: 0.2449, favored: "Switzerland", mkt_home: null, mkt_away: null },
-  { matchNum: 86, match: "Argentina vs Cape Verde", home: "Argentina", away: "Cape Verde", date: "2026-07-03", venue: "Miami", round: "R32", slug: "fifwc-arg-cvi-2026-07-03", mdl_home: 0.7863, mdl_draw: 0.1339, mdl_away: 0.0798, adj_home: 0.8533, adj_away: 0.1467, favored: "Argentina", mkt_home: null, mkt_away: null },
+  { matchNum: 86, match: "Argentina vs Cape Verde", home: "Argentina", away: "Cape Verde", pmAway: "Cabo Verde", date: "2026-07-03", venue: "Miami", round: "R32", slug: "fifwc-arg-cvi-2026-07-03", mdl_home: 0.7863, mdl_draw: 0.1339, mdl_away: 0.0798, adj_home: 0.8533, adj_away: 0.1467, favored: "Argentina", mkt_home: null, mkt_away: null },
   { matchNum: 87, match: "Colombia vs Ghana", home: "Colombia", away: "Ghana", date: "2026-07-03", venue: "Kansas City", round: "R32", slug: null, mdl_home: 0.7794, mdl_draw: 0.1376, mdl_away: 0.083, adj_home: 0.8482, adj_away: 0.1518, favored: "Colombia", mkt_home: null, mkt_away: null },
   { matchNum: 88, match: "Australia vs Egypt", home: "Australia", away: "Egypt", date: "2026-07-03", venue: "Dallas", round: "R32", slug: "fifwc-aus-egy-2026-07-03", mdl_home: 0.6477, mdl_draw: 0.1775, mdl_away: 0.1748, adj_home: 0.7365, adj_away: 0.2635, favored: "Australia", mkt_home: null, mkt_away: null },
 ];

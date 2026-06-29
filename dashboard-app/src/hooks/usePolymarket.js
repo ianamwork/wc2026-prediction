@@ -81,7 +81,7 @@ export function usePolymarket(predictions, refreshInterval = 30000) {
         if (!pred) continue;
 
         const markets = event.markets || [];
-        const parsed = parseBinaryMarkets(markets, pred.home, pred.away);
+        const parsed = parseBinaryMarkets(markets, pred.pmHome || pred.home, pred.pmAway || pred.away);
         if (parsed) {
           result[slug] = { ...parsed, source: 'live', volume: event.volume || 0 };
         }
