@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { MATCH_PREDICTIONS } from '../data/modelPredictions';
 
 // WC 2026 events use 3 binary Yes/No markets per match.
 // groupItemTitle tells us which outcome: "Germany", "Ecuador", "Draw (X vs Y)"
@@ -43,7 +42,7 @@ const parseBinaryMarkets = (markets, homeTeam, awayTeam) => {
 
 const BATCH_SIZE = 10;
 
-export function usePolymarket(refreshInterval = 30000) {
+export function usePolymarket(predictions, refreshInterval = 30000) {
   const [liveData, setLiveData] = useState({});
   const [lastUpdated, setLastUpdated] = useState(null);
   const [isLive, setIsLive] = useState(false);
@@ -56,8 +55,8 @@ export function usePolymarket(refreshInterval = 30000) {
     setIsRefreshing(true);
 
     try {
-      // Batch-fetch all WC 2026 slugs in groups of BATCH_SIZE
-      const slugs = MATCH_PREDICTIONS.map(p => p.slug);
+      // Batch-fetch all slugs in groups of BATCH_SIZE (skips null slugs)
+      const slugs = predictions.map(p => p.slug).filter(Boolean);
       const allEvents = [];
 
       for (let i = 0; i < slugs.length; i += BATCH_SIZE) {
@@ -78,7 +77,7 @@ export function usePolymarket(refreshInterval = 30000) {
         const slug = event.slug || event.ticker;
         if (!slug) continue;
 
-        const pred = MATCH_PREDICTIONS.find(p => p.slug === slug);
+        const pred = predictions.find(p => p.slug === slug);
         if (!pred) continue;
 
         const markets = event.markets || [];
@@ -105,7 +104,7 @@ export function usePolymarket(refreshInterval = 30000) {
     }
 
     setIsRefreshing(false);
-  }, []);
+  }, [predictions]);
 
   const retry = useCallback(() => {
     stopped.current = false;
@@ -121,7 +120,7 @@ export function usePolymarket(refreshInterval = 30000) {
     return () => clearInterval(interval);
   }, [fetchMarkets, refreshInterval]);
 
-  const mergedPredictions = MATCH_PREDICTIONS.map(pred => {
+  const mergedPredictions = predictions.map(pred => {
     const live = liveData[pred.slug];
     if (!live) return pred;
 

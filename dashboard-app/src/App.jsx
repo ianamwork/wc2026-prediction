@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Separator } from '@/components/ui/separator';
 import { usePolymarket } from './hooks/usePolymarket';
 import { useScores, findScore } from './hooks/useScores';
-import { TOURNAMENT_PREDICTIONS } from './data/modelPredictions';
+import { TOURNAMENT_PREDICTIONS, MATCH_PREDICTIONS } from './data/modelPredictions';
 import { KNOCKOUT_PREDICTIONS } from './data/knockoutPredictions';
 import { MATCH_SCHEDULE, SCHEDULE_DATES, TODAY, formatDate, MODEL_SCORECARD } from './data/matchSchedule';
 import { getFlag } from './data/teamMapping';
@@ -671,11 +671,12 @@ function TournamentTab() {
 
 // ─── R32 Match Row ────────────────────────────────────────────────────────────
 
-function R32MatchRow({ pred }) {
+function R32MatchRow({ pred, isLive }) {
   const colors = getMatchColors(pred.home, pred.away);
   const favoredIsHome = pred.adj_home > pred.adj_away;
   const favoredAdj    = Math.max(pred.adj_home, pred.adj_away);
   const favoredColor  = textSafeColor(favoredIsHome ? colors.home : colors.away);
+  const hasMkt = pred.mkt_home != null;
 
   return (
     <div className="border-l-[3px] border-l-gray-200 pl-4 py-3">
@@ -690,7 +691,7 @@ function R32MatchRow({ pred }) {
           <div className="text-[10px] text-gray-400 truncate">{pred.venue}</div>
         </div>
 
-        {/* Teams + model bar */}
+        {/* Teams + bars */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className={`text-sm font-semibold ${favoredIsHome ? 'text-gray-900' : 'text-gray-500'}`}>
@@ -701,18 +702,33 @@ function R32MatchRow({ pred }) {
               {pred.away} {getFlag(pred.away)}
             </span>
           </div>
-          <div className="mt-1.5 flex items-center gap-2">
-            <span className="text-[9px] text-gray-400 w-10 shrink-0">Model</span>
-            <div className="flex-1">
-              <ProbBar
-                home={pred.mdl_home} draw={pred.mdl_draw} away={pred.mdl_away}
-                homeTeam={pred.home} awayTeam={pred.away} colors={colors}
-              />
+          <div className="mt-1.5 space-y-1.5">
+            <div className="flex items-center gap-2">
+              <span className="text-[9px] text-gray-400 w-10 shrink-0">Model</span>
+              <div className="flex-1">
+                <ProbBar
+                  home={pred.mdl_home} draw={pred.mdl_draw} away={pred.mdl_away}
+                  homeTeam={pred.home} awayTeam={pred.away} colors={colors}
+                />
+              </div>
             </div>
+            {hasMkt && (
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] text-gray-400 w-10 shrink-0">
+                  {isLive ? 'Live' : 'Market'}
+                </span>
+                <div className="flex-1">
+                  <ProbBar
+                    home={pred.mkt_home} draw={pred.mkt_draw} away={pred.mkt_away}
+                    homeTeam={pred.home} awayTeam={pred.away} colors={colors}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* KO adjusted win % */}
+        {/* KO adjusted win % + edge if market data available */}
         <div className="shrink-0 text-right pl-2 border-l border-gray-100 min-w-[72px]">
           <div className="text-[10px] text-gray-400 font-medium">KO win</div>
           <div className="text-[11px] font-semibold mt-0.5 text-gray-600 truncate">
@@ -721,6 +737,11 @@ function R32MatchRow({ pred }) {
           <div className="mono text-lg font-bold leading-tight" style={{ color: favoredColor }}>
             {(favoredAdj * 100).toFixed(1)}%
           </div>
+          {hasMkt && pred.best_edge > 0 && (
+            <div className="text-[9px] mono text-blue-500 mt-0.5">
+              +{(pred.best_edge * 100).toFixed(1)}% edge
+            </div>
+          )}
         </div>
 
       </div>
@@ -753,12 +774,12 @@ const R32_BRACKET = [
 
 // ─── Knockout Tab ─────────────────────────────────────────────────────────────
 
-function KnockoutTab() {
+function KnockoutTab({ koPredictions, koIsLive }) {
   const predByNum = useMemo(() => {
     const m = {};
-    for (const p of KNOCKOUT_PREDICTIONS) m[p.matchNum] = p;
+    for (const p of koPredictions) m[p.matchNum] = p;
     return m;
-  }, []);
+  }, [koPredictions]);
 
   const topTeams = TOURNAMENT_PREDICTIONS.filter(t => t.sf >= 5).sort((a, b) => b.win - a.win);
 
@@ -793,7 +814,7 @@ function KnockoutTab() {
                   <div className="divide-y divide-gray-50">
                     {matchNums.map(num => {
                       const pred = predByNum[num];
-                      return pred ? <R32MatchRow key={num} pred={pred} /> : null;
+                      return pred ? <R32MatchRow key={num} pred={pred} isLive={koIsLive} /> : null;
                     })}
                   </div>
                 </div>
@@ -1060,7 +1081,8 @@ function StatsBar({ predictions, isRefreshing }) {
 // ─── App ─────────────────────────────────────────────────────────────────────
 
 export default function App() {
-  const { predictions, lastUpdated, isLive, isRefreshing, retry } = usePolymarket(30000);
+  const { predictions, lastUpdated, isLive, isRefreshing, retry } = usePolymarket(MATCH_PREDICTIONS, 30000);
+  const { predictions: koPredictions, isLive: koIsLive } = usePolymarket(KNOCKOUT_PREDICTIONS, 30000);
   const { scoreMap, scoreSource } = useScores(30000);
 
   // Live model accuracy: check every completed match in scoreMap against model predictions
@@ -1096,7 +1118,7 @@ export default function App() {
             <TournamentTab />
           </TabsContent>
           <TabsContent value="knockout" className="mt-4">
-            <KnockoutTab />
+            <KnockoutTab koPredictions={koPredictions} koIsLive={koIsLive} />
           </TabsContent>
           <TabsContent value="about" className="mt-4">
             <AboutTab modelAccuracy={modelAccuracy} />
