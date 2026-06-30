@@ -13,6 +13,7 @@ import { KNOCKOUT_PREDICTIONS } from './data/knockoutPredictions';
 import { MATCH_SCHEDULE, SCHEDULE_DATES, TODAY, formatDate, MODEL_SCORECARD } from './data/matchSchedule';
 import { getFlag } from './data/teamMapping';
 import { getMatchColors, barTextColor, textSafeColor } from './data/teamColors';
+import { Bracket } from './components/Bracket';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -679,7 +680,7 @@ function R32MatchRow({ pred, isLive }) {
   const hasMkt = pred.mkt_home != null;
 
   return (
-    <div className="border-l-[3px] border-l-gray-200 pl-4 py-3">
+    <div id={`r32-match-${pred.matchNum}`} className="border-l-[3px] border-l-gray-200 pl-4 py-3">
       <div className="flex items-start gap-3">
 
         {/* Match # · date · venue */}
@@ -785,6 +786,19 @@ function KnockoutTab({ koPredictions, koIsLive }) {
 
   return (
     <div className="space-y-6">
+
+      {/* ── Visual bracket overview ── */}
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <h2 className="text-sm font-semibold text-gray-900">Bracket</h2>
+            <p className="text-[11px] text-gray-400 mt-0.5">
+              Click any R32 match to jump to its details below
+            </p>
+          </div>
+        </div>
+        <Bracket predByNum={predByNum} />
+      </div>
 
       {/* ── R32 matchups ── */}
       <div>
