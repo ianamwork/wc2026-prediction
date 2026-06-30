@@ -14,6 +14,7 @@ import { MATCH_SCHEDULE, SCHEDULE_DATES, TODAY, formatDate, MODEL_SCORECARD } fr
 import { getFlag } from './data/teamMapping';
 import { getMatchColors, barTextColor, textSafeColor } from './data/teamColors';
 import { Bracket } from './components/Bracket';
+import { ScorecardTab } from './components/ScorecardTab';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -1123,6 +1124,7 @@ export default function App() {
             <TabsTrigger value="knockout" className="text-xs h-7">Knockout</TabsTrigger>
             <TabsTrigger value="matches" className="text-xs h-7">Match Bets</TabsTrigger>
             <TabsTrigger value="tournament" className="text-xs h-7">Tournament Winner</TabsTrigger>
+            <TabsTrigger value="scorecard" className="text-xs h-7">Scorecard</TabsTrigger>
             <TabsTrigger value="about" className="text-xs h-7">About</TabsTrigger>
           </TabsList>
           <TabsContent value="matches" className="mt-4">
@@ -1133,6 +1135,9 @@ export default function App() {
           </TabsContent>
           <TabsContent value="knockout" className="mt-4">
             <KnockoutTab koPredictions={koPredictions} koIsLive={koIsLive} />
+          </TabsContent>
+          <TabsContent value="scorecard" className="mt-4">
+            <ScorecardTab />
           </TabsContent>
           <TabsContent value="about" className="mt-4">
             <AboutTab modelAccuracy={modelAccuracy} />
